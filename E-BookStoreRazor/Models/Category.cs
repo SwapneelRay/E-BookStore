@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
-namespace E_BookStoreWeb.Models
+namespace E_BookStoreRazor.Models
 {
     public class Category
     {
@@ -12,7 +12,7 @@ namespace E_BookStoreWeb.Models
         [DisplayName("Category Name")]
         public string Name { get; set; }
         [DisplayName("Display Order")]
-        [Range(1, 100,ErrorMessage = "Display Order must be between 1-100")]
+        [Range(1, 100, ErrorMessage = "Display Order must be between 1-100")]
         public int DisplayOrder { get; set; }
 
     }
