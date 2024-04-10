@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
+    <RootNamespace>E_BookStore.DataAccess</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>E_BookStoreWeb</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\E-BookStore.DataAccess\E-BookStore.DataAccess.csproj" />
     <ProjectReference Include="..\E-BookStore.Models\E-BookStore.Models.csproj" />
     <ProjectReference Include="..\E-BookStore.Utility\E-BookStore.Utility.csproj" />
   </ItemGroup>

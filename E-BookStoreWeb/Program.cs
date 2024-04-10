@@ -1,4 +1,6 @@
-using E_BookStoreWeb.Data;
+using E_BookStore.DataAccess.Data;
+using E_BookStore.DataAccess.Repository;
+using E_BookStore.DataAccess.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
 
 namespace E_BookStoreWeb
@@ -11,8 +13,8 @@ namespace E_BookStoreWeb
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-            builder.Services.AddDbContext<ApplicationDbContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             var app = builder.Build();
 
