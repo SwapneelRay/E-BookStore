@@ -3,6 +3,7 @@ using E_BookStore.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_BookStore.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240412221026_addFroeignKeyForCategoryProductRelation")]
+    partial class addFroeignKeyForCategoryProductRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,10 +88,6 @@ namespace E_BookStore.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<double>("ListPrice")
                         .HasColumnType("float");
 
@@ -119,7 +118,6 @@ namespace E_BookStore.DataAccess.Migrations
                             CategoryId = 1,
                             Description = "mast novel hai",
                             ISBN = "art001",
-                            ImageURL = "",
                             ListPrice = 50.0,
                             Price = 50.0,
                             Price100 = 35.0,
@@ -133,7 +131,6 @@ namespace E_BookStore.DataAccess.Migrations
                             CategoryId = 1,
                             Description = "secrect society",
                             ISBN = "art002",
-                            ImageURL = "",
                             ListPrice = 80.0,
                             Price = 80.0,
                             Price100 = 55.0,
@@ -147,7 +144,6 @@ namespace E_BookStore.DataAccess.Migrations
                             CategoryId = 3,
                             Description = "digital Edition",
                             ISBN = "art003",
-                            ImageURL = "",
                             ListPrice = 50.0,
                             Price = 50.0,
                             Price100 = 35.0,

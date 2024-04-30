@@ -7,7 +7,7 @@
 namespace E_BookStore.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class AddCategoryTableToDBandSeedCategory : Migration
+    public partial class addCategoryTablewithSeedData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -26,13 +26,33 @@ namespace E_BookStore.DataAccess.Migrations
                     table.PrimaryKey("PK_Categories", x => x.Id);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "products",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ISBN = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ListPrice = table.Column<double>(type: "float", nullable: false),
+                    Price = table.Column<double>(type: "float", nullable: false),
+                    Price50 = table.Column<double>(type: "float", nullable: false),
+                    Price100 = table.Column<double>(type: "float", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_products", x => x.Id);
+                });
+
             migrationBuilder.InsertData(
                 table: "Categories",
                 columns: new[] { "Id", "DisplayOrder", "Name" },
                 values: new object[,]
                 {
                     { 1, 1, "Action" },
-                    { 2, 2, "Sci-Fi" },
+                    { 2, 2, "Romantic" },
                     { 3, 3, "History" }
                 });
         }
@@ -42,6 +62,9 @@ namespace E_BookStore.DataAccess.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "products");
         }
     }
 }
