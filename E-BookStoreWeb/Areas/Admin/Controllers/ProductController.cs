@@ -10,13 +10,15 @@ namespace E_BookStoreWeb.Areas.Admin.Controllers
     public class ProductController : Controller
     {
         public readonly IUnitOfWork _UnitOfWork;
-        public ProductController(IUnitOfWork unitOfWork)
+        public readonly IWebHostEnvironment _WebHostEnvironment;
+        public ProductController(IUnitOfWork unitOfWork,IWebHostEnvironment webHostEnvironment)
         {
             _UnitOfWork = unitOfWork;
+            _WebHostEnvironment = webHostEnvironment;
         }
         public IActionResult Index()
         {
-            List<Product> objProductList = _UnitOfWork.Product.GetAll().ToList();
+            List<Product> objProductList = _UnitOfWork.Product.GetAll(includeProperties:"Category").ToList();
             return View(objProductList);
         }
         /*public IActionResult Create()
@@ -110,7 +112,37 @@ namespace E_BookStoreWeb.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
-                _UnitOfWork.Product.Add(productVM.Product);
+                string wwwRootPath = _WebHostEnvironment.WebRootPath;
+                if(file != null)
+                {
+                    string filename = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    string productPath = Path.Combine(wwwRootPath, @"images\product");
+
+                    if(!string.IsNullOrEmpty(productVM.Product.ImageURL))
+                    {
+                        //delete old image
+                        var oldImagePath = Path.Combine(wwwRootPath,productVM.Product.ImageURL.TrimStart('\\'));
+                        if(System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    using (var fileStream = new FileStream(Path.Combine(productPath, filename), FileMode.Create))
+                    {
+                        file.CopyTo(fileStream);
+                    }
+                    productVM.Product.ImageURL = @"\images\product\" + filename;
+                }
+                if(productVM.Product.Id==0)
+                {
+                    _UnitOfWork.Product.Add(productVM.Product);
+                }
+                else
+                {
+                    _UnitOfWork.Product.Update(productVM.Product);
+                }
+                
                 _UnitOfWork.Save();
                 TempData["Success"] = "New Product has been added successfully";
                 return RedirectToAction("Index");
@@ -152,7 +184,7 @@ namespace E_BookStoreWeb.Areas.Admin.Controllers
             return View();
         }*/
 
-        public IActionResult Delete(int? id)
+       /* public IActionResult Delete(int? id)
         {
             if (id == null || id == 0)
             {
@@ -174,6 +206,37 @@ namespace E_BookStoreWeb.Areas.Admin.Controllers
             _UnitOfWork.Save();
             TempData["Success"] = "The Product has been deleted successfully";
             return RedirectToAction("Index");
+        }*/
+
+
+        #region APICALLS
+        [HttpGet]
+        public IActionResult GetAll() 
+        {
+            List<Product> objProductList = _UnitOfWork.Product.GetAll(includeProperties: "Category").ToList();
+            return Json(new {data=objProductList});
         }
+
+        public IActionResult Delete(int? id)
+        {
+
+            Product? productToBeDeleted = _UnitOfWork.Product.Get(x => x.Id == id);
+            if(productToBeDeleted == null)
+            {
+                return Json(new {success=false,message="Error while deleting"});
+            }
+
+            var oldImagePath = Path.Combine(_WebHostEnvironment.WebRootPath, productToBeDeleted.ImageURL.TrimStart('\\'));
+            if (System.IO.File.Exists(oldImagePath))
+            {
+                System.IO.File.Delete(oldImagePath);
+            }
+            _UnitOfWork.Product.Remove(productToBeDeleted);
+            _UnitOfWork.Save();
+            TempData["Success"] = "The Product has been deleted successfully";
+            return Json(new { success = true, message = "Deleted successfully" }); ;
+
+        }
+        #endregion
     }
 }

@@ -45,6 +45,7 @@ namespace E_BookStore.Models
         [ForeignKey("CategoryId")]
         [ValidateNever]
         public Category Category { get; set; }
+        [ValidateNever]
         public string ImageURL {  get; set; }
 
 
