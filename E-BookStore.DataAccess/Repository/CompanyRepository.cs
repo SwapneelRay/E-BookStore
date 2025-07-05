@@ -9,17 +9,17 @@ using System.Threading.Tasks;
 
 namespace E_BookStore.DataAccess.Repository
 {
-    public class CategoryRepository : Repository<Category>, ICategoryRepository
+    public class CompanyRepository : Repository<Company>, ICompanyRepository
     {
         private ApplicationDbContext _db;
-        public CategoryRepository(ApplicationDbContext db) : base(db)
+        public CompanyRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
         }
 
-        public void Update(Category obj)
+        public void Update(Company obj)
         {
-            _db.categories.Update(obj);
+            _db.companies.Update(obj);
         }
     }
 }
