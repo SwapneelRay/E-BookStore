@@ -2,8 +2,12 @@
 using E_BookStore.Models;
 using E_BookStore.Models.ViewModels;
 using E_BookStore.Utility;
+using E_BookStore.Utility.RazorPay;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using NuGet.Protocol;
+using Razorpay.Api;
 using System.Drawing;
 using System.Security.Claims;
 
@@ -14,13 +18,14 @@ namespace E_BookStoreWeb.Areas.Customer.Controllers
     public class CartController : Controller
     {
         public readonly IUnitOfWork _unitOfWork;
+        private readonly RazorPaySettings _settings;
         [BindProperty]
         public ShoppingCartVM shoppingCartVM { get; set; }
 
-        public CartController(IUnitOfWork unitOfWork)
+        public CartController(IUnitOfWork unitOfWork,IOptions<RazorPaySettings> options)
         {
             _unitOfWork = unitOfWork;
-            
+            _settings = options.Value;
         }
 
         public IActionResult Index()
@@ -75,11 +80,11 @@ namespace E_BookStoreWeb.Areas.Customer.Controllers
 		{
 
 			var claimsIdentity = (ClaimsIdentity)User.Identity;
-			var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+			var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;// to get the user thats logged in
 
             shoppingCartVM.ShoppingCartList = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == userId, includeProperties: "Product");
             shoppingCartVM.OrderHeader.ApplicationUserId = userId;	
-			ApplicationUser applicationUser= _unitOfWork.ApplicationUser.Get(u => u.Id == userId);
+			ApplicationUser applicationUser= _unitOfWork.ApplicationUser.Get(u => u.Id == userId);// so that user table is not updated
 			
 			foreach (var item in shoppingCartVM.ShoppingCartList)
 			{
@@ -115,14 +120,65 @@ namespace E_BookStoreWeb.Areas.Customer.Controllers
 			}
 			if (applicationUser.CompanyId.GetValueOrDefault() == 0)
 			{// regular customer
-			    //get payment stripe logic here
-			}
+             //get payment razorpay logic here
+                RazorpayClient client = new RazorpayClient(_settings.KeyId,_settings.SecretKey);
+                Dictionary<string, object> options = new Dictionary<string, object>();
+                options.Add("amount", shoppingCartVM.OrderHeader.OrderTotal * 100); // amount in paise so multiplied by 100
+                options.Add("currency", "INR");
+                Order order = client.Order.Create(options);
+                shoppingCartVM.OrderHeader.SessionId = order["id"].ToString();
+                _unitOfWork.OrderHeader.Update(shoppingCartVM.OrderHeader);
+                _unitOfWork.Save();
+
+                return View("Payment",shoppingCartVM);
+            }
 
 			return RedirectToAction(nameof(OrderConfirmation),new { id = shoppingCartVM.OrderHeader.Id});
 		}
 
+        [HttpPost]
+        public IActionResult PaymentCallback([FromQuery] string status)
+        {
+            var form = Request.Form;
+            shoppingCartVM.OrderHeader = _unitOfWork.OrderHeader.Get(u => u.SessionId == form["razorpay_order_id"].ToString());
+            if (status == "cancelled")
+            {
+                shoppingCartVM.OrderHeader.OrderStatus = SD.StatusCancelled;
+                shoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusRejected;
+                _unitOfWork.OrderHeader.Update(shoppingCartVM.OrderHeader);
+                _unitOfWork.Save();
+                return RedirectToAction(nameof(Summary));
+            }
+            else if (status == "success")
+            {
+                
+                if (form != null)
+                {
+                   
+                    shoppingCartVM.OrderHeader.PaymentIntentId = form["razorpay_payment_id"];
+                    string razorpaySignature = form["razorpay_signature"];
+                    shoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusApproved;
+                    shoppingCartVM.OrderHeader.OrderStatus = SD.StatusApproved;
+                    _unitOfWork.OrderHeader.Update(shoppingCartVM.OrderHeader);
+                    _unitOfWork.Save();
+
+                    
+
+                    return RedirectToAction("Index", "Home", new { area = "Customer" });
+                }
+            }
+
+
+            return RedirectToAction("Index", "Home", new { area = "Customer" });
+
+        }
+
         public IActionResult OrderConfirmation(int id)
         {
+            List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == shoppingCartVM.OrderHeader.ApplicationUserId).ToList();
+
+            _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
+            _unitOfWork.Save();
             return View(id);
         }
 

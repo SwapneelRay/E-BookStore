@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using E_BookStore.Utility;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc.Razor;
+using E_BookStore.Utility.RazorPay;
 
 namespace E_BookStoreWeb
 {
@@ -17,7 +19,7 @@ namespace E_BookStoreWeb
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+            builder.Services.Configure<RazorPaySettings>(builder.Configuration.GetSection("RazorPay"));
             builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
             builder.Services.ConfigureApplicationCookie(options =>
             {
@@ -27,6 +29,13 @@ namespace E_BookStoreWeb
             });
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IEmailSender, EmailSender>();
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+                options.IdleTimeout= TimeSpan.FromSeconds(100);
+            });
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -39,10 +48,9 @@ namespace E_BookStoreWeb
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
             app.UseAuthentication(); 
-
+            app.UseSession();
             app.UseAuthorization();
             app.MapRazorPages();
             app.MapControllerRoute(
