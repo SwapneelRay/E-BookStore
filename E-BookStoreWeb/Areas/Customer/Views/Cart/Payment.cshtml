@@ -1,0 +1,66 @@
+﻿@model ShoppingCartVM
+@{
+    @inject IConfiguration Configuration
+    var razorPayKey = Configuration["RazorPay:KeyId"];
+}
+
+<head>
+    <meta charset="utf-8" />
+    <title>Checkout</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <h2>Redirecting to Payment...</h2>
+
+    <script>
+        const key = '@razorPayKey';
+        
+        var options = {
+            "key": key,
+
+            "amount": "@Model.OrderHeader.OrderTotal",
+            "currency": "INR",
+            "name": "@Model.OrderHeader.ApplicationUser",
+            "description": "Order Payment",
+            "order_id": "@Model.OrderHeader.SessionId",
+            "callback_url": "PaymentCallback?status=success",
+            "modal": {
+                "ondismiss": function () {
+                    // User cancelled the payment
+                    
+                    const form = document.createElement("form");
+                    form.method = "POST";
+                    form.action = "/Customer/Cart/PaymentCallback?status=cancelled";
+
+                    
+
+                    // Add session ID or any identifier
+                    const sessionInput = document.createElement("input");
+                    sessionInput.type = "hidden";
+                    sessionInput.name = "razorpay_order_id";
+                    sessionInput.value = "@Model.OrderHeader.SessionId";  // replace with actual session/order ID
+                    form.appendChild(sessionInput);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                    
+                }
+            },
+            "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information especially their phone number
+                "name": "@Model.OrderHeader.ApplicationUser", //your customer's name
+                 //Provide the customer's phone number for better conversion rates
+            },
+            "notes": {
+                "address": "Razorpay Corporate Office"
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
+            
+        };
+        var rzp1 = new Razorpay(options);
+        
+            rzp1.open();
+      
+    </script>
+</body>

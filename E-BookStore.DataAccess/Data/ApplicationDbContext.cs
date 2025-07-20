@@ -16,6 +16,8 @@ namespace E_BookStore.DataAccess.Data
         public DbSet<ApplicationUser> applicationUsers { get; set; }
         public DbSet<Company> companies { get; set; }
         public DbSet<ShoppingCart> shoppingCarts { get; set; }
+        public DbSet<OrderDetail> orderDetails { get; set; }
+        public DbSet<OrderHeader> orderHeaders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
