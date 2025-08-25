@@ -39,9 +39,12 @@ namespace E_BookStoreWeb.Areas.Customer.Controllers
                 OrderHeader = new()
             };
 
+            IEnumerable<ProductImage> images = _unitOfWork.ProductImage.GetAll();
+
             foreach (var item in shoppingCartVM.ShoppingCartList)
             {
                 item.Price = GetPriceBasedOnQuantity(item);
+                item.Product.productImages = images.Where(u=> u.ProductId==item.ProductId).ToList();
                 shoppingCartVM.OrderHeader.OrderTotal += (item.Price * item.Count);
             }
 
@@ -197,10 +200,11 @@ namespace E_BookStoreWeb.Areas.Customer.Controllers
         public IActionResult Minus(int cartId)
         {
 
-            ShoppingCart cartFromDB = _unitOfWork.ShoppingCart.Get(u => u.Id == cartId, includeProperties: "Product");
+            ShoppingCart cartFromDB = _unitOfWork.ShoppingCart.Get(u => u.Id == cartId, includeProperties: "Product",tracked:true);
 
             if (cartFromDB.Count <= 1)
             {
+                HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == cartFromDB.ApplicationUserId).Count() - 1);
                 _unitOfWork.ShoppingCart.Remove(cartFromDB);
             }
             else
@@ -218,8 +222,8 @@ namespace E_BookStoreWeb.Areas.Customer.Controllers
         public IActionResult Remove(int cartId)
         {
 
-            ShoppingCart cartFromDB = _unitOfWork.ShoppingCart.Get(u => u.Id == cartId, includeProperties: "Product");
-
+            ShoppingCart cartFromDB = _unitOfWork.ShoppingCart.Get(u => u.Id == cartId, includeProperties: "Product",tracked:true);
+            HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == cartFromDB.ApplicationUserId).Count()-1);
             _unitOfWork.ShoppingCart.Remove(cartFromDB);
             _unitOfWork.Save();
 

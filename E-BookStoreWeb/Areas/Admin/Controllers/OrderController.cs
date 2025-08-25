@@ -4,9 +4,7 @@ using E_BookStore.Models;
 using E_BookStore.Models.ViewModels;
 using E_BookStore.Utility;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using System.Security.Claims;
 
 namespace E_BookStoreWeb.Areas.Admin.Controllers

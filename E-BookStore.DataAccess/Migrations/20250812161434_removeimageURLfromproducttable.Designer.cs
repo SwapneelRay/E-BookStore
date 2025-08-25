@@ -4,6 +4,7 @@ using E_BookStore.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_BookStore.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250812161434_removeimageURLfromproducttable")]
+    partial class removeimageURLfromproducttable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -290,28 +293,6 @@ namespace E_BookStore.DataAccess.Migrations
                             Price50 = 45.0,
                             Title = "Halo"
                         });
-                });
-
-            modelBuilder.Entity("E_BookStore.Models.ProductImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ImageURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("productImages");
                 });
 
             modelBuilder.Entity("E_BookStore.Models.ShoppingCart", b =>
@@ -617,17 +598,6 @@ namespace E_BookStore.DataAccess.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("E_BookStore.Models.ProductImage", b =>
-                {
-                    b.HasOne("E_BookStore.Models.Product", "Product")
-                        .WithMany("productImages")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("E_BookStore.Models.ShoppingCart", b =>
                 {
                     b.HasOne("E_BookStore.Models.ApplicationUser", "ApplicationUser")
@@ -705,11 +675,6 @@ namespace E_BookStore.DataAccess.Migrations
                         .HasForeignKey("CompanyId");
 
                     b.Navigation("Company");
-                });
-
-            modelBuilder.Entity("E_BookStore.Models.Product", b =>
-                {
-                    b.Navigation("productImages");
                 });
 #pragma warning restore 612, 618
         }
