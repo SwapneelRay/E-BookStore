@@ -1,6 +1,7 @@
 using E_BookStore.DataAccess.Repository;
 using E_BookStore.DataAccess.Repository.IRepository;
 using E_BookStore.Models;
+using E_BookStore.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -22,14 +23,22 @@ namespace E_BookStoreWeb.Areas.Customer.Controllers
 
         public IActionResult Index()
         {
-            IEnumerable<Product> productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (claim != null)
+            {
+                HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == claim.Value).Count());
+            }
+
+            IEnumerable<Product> productList = _unitOfWork.Product.GetAll(includeProperties: "Category,productImages");
             return View(productList);
         }
         public IActionResult Details(int productId)
         {
             ShoppingCart shoppingCart = new()
             {
-                 Product = _unitOfWork.Product.Get(u=>u.Id==productId,includeProperties: "Category"),
+                 Product = _unitOfWork.Product.Get(u=>u.Id==productId,includeProperties: "Category,productImages"),
                  Count=1,
                  ProductId=productId
             };
@@ -51,13 +60,16 @@ namespace E_BookStoreWeb.Areas.Customer.Controllers
             { //cart exists
                 cartFromDB.Count += shoppingCart.Count;
                 _unitOfWork.ShoppingCart.Update(cartFromDB);
+                _unitOfWork.Save();
             }
             else
             {
                 _unitOfWork.ShoppingCart.Add(shoppingCart);
+                _unitOfWork.Save();
+                HttpContext.Session.SetInt32(SD.SessionCart,_unitOfWork.ShoppingCart.GetAll(u=>u.ApplicationUserId==userId).Count());
             }
 
-            _unitOfWork.Save();
+            
             TempData["Success"] = "Items added to the Cart successfully";
             return RedirectToAction(nameof(Index));
         }

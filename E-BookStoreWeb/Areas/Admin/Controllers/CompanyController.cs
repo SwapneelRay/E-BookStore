@@ -1,10 +1,8 @@
 ﻿using E_BookStore.DataAccess.Repository.IRepository;
 using E_BookStore.Models;
-using E_BookStore.Models.ViewModels;
 using E_BookStore.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace E_BookStoreWeb.Areas.Admin.Controllers
 {

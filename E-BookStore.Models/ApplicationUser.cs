@@ -17,6 +17,8 @@ namespace E_BookStore.Models
         [ValidateNever]
         public Company Company { get; set; }
         public int? CompanyId { get; set; }
+        [NotMapped]
+        public string Role { get; set; }
 
     }
 }
